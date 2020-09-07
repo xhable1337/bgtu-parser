@@ -19,6 +19,9 @@ r"""Парсер сайта БГТУ и базы данных бота, кото
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.ui import Select
+#from selenium.webdriver.support.ui import WebDriverWait
+#from selenium.webdriver.support import expected_conditions as EC
+#from selenium.webdriver.common.by import By
 #from pymongo import MongoClient
 from flask import Flask, request
 import time
@@ -43,6 +46,7 @@ chrome_options.add_argument("--window-size=1920,1080")
 chrome_options.add_argument("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/81.0.4044.138 Safari/537.36 OPR/68.0.3618.206 (Edition Yx GX)")
 chrome_options.binary_location = CHROME_BIN
 driver = webdriver.Chrome(executable_path=CHROMEDRIVER_PATH, chrome_options=chrome_options)
+driver.implicitly_wait(10)
 #firefox_options = webdriver.FirefoxOptions()
 #firefox_options.headless = True
 
@@ -98,9 +102,12 @@ def get_groups(faculty='Факультет информационных техн
     #driver = webdriver.Chrome(executable_path='chromedriver.exe')
     url = 'https://www.tu-bryansk.ru/education/schedule/'
     driver.get(url)
+    
     select_faculty = Select(driver.find_element_by_xpath('//*[@id="faculty"]'))
     select_faculty.select_by_value(faculty)
-    time.sleep(0.5)
+    #time.sleep(0.5)
+    #element = WebDriverWait(driver, 30).until(EC.presence_of_element_located((By.XPATH, '//*[@id="group"]')))
+    #Select(element)
     select_group = Select(driver.find_element_by_xpath('//*[@id="group"]'))
     options = select_group.options
     options_by_year = []
