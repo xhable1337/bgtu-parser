@@ -19,7 +19,7 @@ r"""Парсер сайта БГТУ и базы данных бота, кото
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.ui import Select
-from pymongo import MongoClient
+#from pymongo import MongoClient
 from flask import Flask, request
 import time
 import re
@@ -50,12 +50,12 @@ driver = webdriver.Chrome(executable_path=CHROMEDRIVER_PATH, chrome_options=chro
 server = Flask(__name__)
 password = os.environ.get('password')
 #MONGODB_URI = os.environ['MONGODB_URI']
-MONGODB_URI = 'mongodb://heroku_38n7vrr9:8pojct20ovk5sgvthiugo3kmpa@ds239055.mlab.com:39055/heroku_38n7vrr9'
-client = MongoClient(host=MONGODB_URI, retryWrites=False) 
-db = client.heroku_38n7vrr9
-schedule_db = db.schedule
-groups_db = db.groups
-users = db.users
+#MONGODB_URI = 'mongodb://heroku_38n7vrr9:8pojct20ovk5sgvthiugo3kmpa@ds239055.mlab.com:39055/heroku_38n7vrr9'
+#client = MongoClient(host=MONGODB_URI, retryWrites=False) 
+#db = client.heroku_38n7vrr9
+#schedule_db = db.schedule
+#groups_db = db.groups
+#users = db.users
 
 #UPDATE_TIME = 86400
 UPDATE_TIME = 2629743
@@ -307,7 +307,7 @@ def groups_api():
         force_update = False
     elif force_update > 0:
         force_update = True
-    groups = get_groups(faculty, year, force_update)
+    groups = get_groups(faculty, year)
     return str(groups), 200
 
 
