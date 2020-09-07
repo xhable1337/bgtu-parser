@@ -315,20 +315,20 @@ def schedule_api():
     weekday = request.args.get('weekday')
     weeknum = request.args.get('weeknum')
     schedule = get_schedule(group, weekday, weeknum)
-    return schedule, 200
+    return str(schedule), 200
 
 
 @server.route("/" + password + '/get_groups/')
 def groups_api():
     faculty = request.args.get('faculty')
     year = request.args.get('year')
-    force_update = request.args.get('force_update')
+    force_update = int(request.args.get('force_update'))
     if force_update == 0:
         force_update = False
     elif force_update > 0:
         force_update = True
     groups = get_groups(faculty, year, force_update)
-    return groups, 200
+    return str(groups), 200
 
 
 if __name__ == "__main__":
