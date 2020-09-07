@@ -308,12 +308,13 @@ def schedule_api():
 @server.route("/" + password + '/get_groups/')
 def groups_api():
     faculty = request.args.get('faculty')
+    if faculty is None:
+        faculty = 'Факультет информационных технологий'
+
     year = request.args.get('year')
-    force_update = int(request.args.get('force_update'))
-    if force_update == 0:
-        force_update = False
-    elif force_update > 0:
-        force_update = True
+    if year is None:
+        year = '20'
+    
     groups = get_groups(faculty, year)
     return str(groups), 200
 
