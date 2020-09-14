@@ -105,7 +105,7 @@ def get_groups(faculty='Факультет информационных техн
     
     select_faculty = Select(driver.find_element_by_xpath('//*[@id="faculty"]'))
     select_faculty.select_by_value(faculty)
-    #time.sleep(0.5)
+    time.sleep(0.5)
     #element = WebDriverWait(driver, 30).until(EC.presence_of_element_located((By.XPATH, '//*[@id="group"]')))
     #Select(element)
     select_group = Select(driver.find_element_by_xpath('//*[@id="group"]'))
