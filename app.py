@@ -103,12 +103,12 @@ def get_groups(faculty='Факультет информационных техн
     url = 'https://www.tu-bryansk.ru/education/schedule/'
     driver.get(url)
     
-    select_faculty = Select(driver.find_element_by_xpath('//*[@id="faculty"]'))
+    select_faculty = Select(driver.find_element_by_xpath('/html/body/div[4]/div[1]/div[2]/div/div[4]/div[2]/select'))
     select_faculty.select_by_value(faculty)
     time.sleep(0.5)
     #element = WebDriverWait(driver, 30).until(EC.presence_of_element_located((By.XPATH, '//*[@id="group"]')))
     #Select(element)
-    select_group = Select(driver.find_element_by_xpath('//*[@id="group"]'))
+    select_group = Select(driver.find_element_by_xpath('/html/body/div[4]/div[1]/div[2]/div/div[4]/div[4]/select'))
     options = select_group.options
     options_by_year = []
 
@@ -133,10 +133,10 @@ def get_groups(faculty='Факультет информационных техн
     #        #driver = webdriver.Chrome(executable_path='chromedriver.exe')
     #        url = 'https://www.tu-bryansk.ru/education/schedule/'
     #        driver.get(url)
-    #        select_faculty = Select(driver.find_element_by_xpath('//*[@id="faculty"]'))
+    #        select_faculty = Select(driver.find_element_by_xpath('/html/body/div[4]/div[1]/div[2]/div/div[4]/div[2]/select'))
     #        select_faculty.select_by_value(faculty)
     #        time.sleep(0.5)
-    #        select_group = Select(driver.find_element_by_xpath('//*[@id="group"]'))
+    #        select_group = Select(driver.find_element_by_xpath('/html/body/div[4]/div[1]/div[2]/div/div[4]/div[4]/select'))
     #        options = select_group.options
     #        options_by_year = []
 #
@@ -209,7 +209,7 @@ def get_schedule(group, weekday, weeknum):
     #driver = webdriver.Chrome(executable_path='chromedriver.exe')
     url = 'https://www.tu-bryansk.ru/education/schedule/'
     driver.get(url)
-    select_group = Select(driver.find_element_by_xpath('//*[@id="group"]'))
+    select_group = Select(driver.find_element_by_xpath('/html/body/div[4]/div[1]/div[2]/div/div[4]/div[4]/select'))
     select_group.select_by_value(group)
     time.sleep(0.5)
     td = driver.find_elements_by_tag_name('td')
