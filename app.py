@@ -102,7 +102,9 @@ def get_groups(faculty='Факультет информационных техн
     #driver = webdriver.Chrome(executable_path='chromedriver.exe')
     url = 'https://www.tu-bryansk.ru/education/schedule/'
     driver.get(url)
-    
+    select_period = Select(driver.find_element_by_xpath('/html/body/div[4]/div[1]/div[2]/div/div[4]/div[1]/select'))
+    select_period.select_by_value('2020-2021: 1 семестр')
+    time.sleep(0.5)
     select_faculty = Select(driver.find_element_by_xpath('/html/body/div[4]/div[1]/div[2]/div/div[4]/div[2]/select'))
     select_faculty.select_by_value(faculty)
     time.sleep(0.5)
@@ -209,6 +211,9 @@ def get_schedule(group, weekday, weeknum):
     #driver = webdriver.Chrome(executable_path='chromedriver.exe')
     url = 'https://www.tu-bryansk.ru/education/schedule/'
     driver.get(url)
+    select_period = Select(driver.find_element_by_xpath('/html/body/div[4]/div[1]/div[2]/div/div[4]/div[1]/select'))
+    select_period.select_by_value('2020-2021: 1 семестр')
+    time.sleep(0.5)
     select_group = Select(driver.find_element_by_xpath('/html/body/div[4]/div[1]/div[2]/div/div[4]/div[4]/select'))
     select_group.select_by_value(group)
     time.sleep(0.5)
