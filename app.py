@@ -47,8 +47,8 @@ chrome_options.add_argument("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebK
 chrome_options.binary_location = CHROME_BIN
 
 
-#driver = webdriver.Chrome(executable_path=CHROMEDRIVER_PATH, chrome_options=chrome_options)
-#driver.implicitly_wait(10)
+driver = webdriver.Chrome(executable_path=CHROMEDRIVER_PATH, chrome_options=chrome_options)
+driver.implicitly_wait(10)
 
 
 #firefox_options = webdriver.FirefoxOptions()
@@ -106,7 +106,7 @@ def get_groups(faculty='Факультет информационных техн
     #driver = webdriver.Chrome(executable_path='chromedriver.exe')
     url = 'https://www.tu-bryansk.ru/education/schedule/'
     
-    driver = webdriver.Chrome(executable_path=CHROMEDRIVER_PATH, chrome_options=chrome_options)
+    #driver = webdriver.Chrome(executable_path=CHROMEDRIVER_PATH, chrome_options=chrome_options)
     #driver.implicitly_wait(10)
     driver.get(url) 
     select_period = Select(driver.find_element_by_xpath('/html/body/div[4]/div[1]/div[2]/div/div[4]/div[1]/select'))
@@ -218,7 +218,7 @@ def get_schedule(group, weekday, weeknum):
     #driver = webdriver.Firefox(options=firefox_options)
     #driver = webdriver.Chrome(executable_path='chromedriver.exe')
     url = 'https://www.tu-bryansk.ru/education/schedule/'
-    driver = webdriver.Chrome(executable_path=CHROMEDRIVER_PATH, chrome_options=chrome_options)
+    #driver = webdriver.Chrome(executable_path=CHROMEDRIVER_PATH, chrome_options=chrome_options)
     #driver.implicitly_wait(10)
     driver.get(url)
     select_period = Select(driver.find_element_by_xpath('/html/body/div[4]/div[1]/div[2]/div/div[4]/div[1]/select'))
@@ -338,8 +338,8 @@ def groups_api():
     return str(groups), 200
 
 
-if __name__ == "__main__":
-    server.run(host="0.0.0.0", port=int(os.environ.get('PORT', '8443')))
+#if __name__ == "__main__":
+#    server.run(host="0.0.0.0", port=int(os.environ.get('PORT', '8443')))
 
 # How to use
 
