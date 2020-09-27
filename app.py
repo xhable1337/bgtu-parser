@@ -45,12 +45,8 @@ chrome_options.add_argument('--disable-gpu')
 chrome_options.add_argument("--window-size=1920,1080")
 chrome_options.add_argument("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/81.0.4044.138 Safari/537.36 OPR/68.0.3618.206 (Edition Yx GX)")
 chrome_options.binary_location = CHROME_BIN
-
-
 driver = webdriver.Chrome(executable_path=CHROMEDRIVER_PATH, chrome_options=chrome_options)
 driver.implicitly_wait(10)
-
-
 #firefox_options = webdriver.FirefoxOptions()
 #firefox_options.headless = True
 
@@ -132,7 +128,6 @@ def get_groups(faculty='Факультет информационных техн
 
         #driver.quit()
 
-    driver.quit()
     return options_by_year
     
     #else:
@@ -308,7 +303,7 @@ def get_schedule(group, weekday, weeknum):
     #elif time.time() - schedule_db.find_one({'group': group})['last_updated'] > UPDATE_TIME:
     #    schedule_db.update_one({'group': group}, {'$set': schedule})
     #    return schedule_db.find_one({'group': group})[weekday][f'{weeknum}']
-    driver.quit()
+    #driver.quit()
     return schedule
 
 @server.route('/')
