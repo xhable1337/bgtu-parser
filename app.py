@@ -98,17 +98,22 @@ def get_groups(faculty='Факультет информационных техн
     year = str(year)
     #driver = webdriver.Chrome(executable_path=CHROMEDRIVER_PATH, chrome_options=chrome_options)
     #executable_path=CHROMEDRIVER_PATH, 
-    #driver = webdriver.Firefox(options=firefox_options)
+    #driver = webdriver.Firefox(options=firefox_options)    
     #driver = webdriver.Chrome(executable_path='chromedriver.exe')
     url = 'https://www.tu-bryansk.ru/education/schedule/'
-    driver.get(url)
     
-    select_faculty = Select(driver.find_element_by_xpath('//*[@id="faculty"]'))
+    #driver = webdriver.Chrome(executable_path=CHROMEDRIVER_PATH, chrome_options=chrome_options)
+    #driver.implicitly_wait(10)
+    driver.get(url) 
+    select_period = Select(driver.find_element_by_xpath('/html/body/div[4]/div[1]/div[2]/div/div[4]/div[1]/select'))
+    select_period.select_by_value('2020-2021_1_1')
+    time.sleep(1)
+    select_faculty = Select(driver.find_element_by_xpath('/html/body/div[4]/div[1]/div[2]/div/div[4]/div[2]/select'))
     select_faculty.select_by_value(faculty)
-    time.sleep(0.5)
+    time.sleep(1)
     #element = WebDriverWait(driver, 30).until(EC.presence_of_element_located((By.XPATH, '//*[@id="group"]')))
     #Select(element)
-    select_group = Select(driver.find_element_by_xpath('//*[@id="group"]'))
+    select_group = Select(driver.find_element_by_xpath('/html/body/div[4]/div[1]/div[2]/div/div[4]/div[4]/select'))
     options = select_group.options
     options_by_year = []
 
@@ -133,10 +138,10 @@ def get_groups(faculty='Факультет информационных техн
     #        #driver = webdriver.Chrome(executable_path='chromedriver.exe')
     #        url = 'https://www.tu-bryansk.ru/education/schedule/'
     #        driver.get(url)
-    #        select_faculty = Select(driver.find_element_by_xpath('//*[@id="faculty"]'))
+    #        select_faculty = Select(driver.find_element_by_xpath('/html/body/div[4]/div[1]/div[2]/div/div[4]/div[2]/select'))
     #        select_faculty.select_by_value(faculty)
     #        time.sleep(0.5)
-    #        select_group = Select(driver.find_element_by_xpath('//*[@id="group"]'))
+    #        select_group = Select(driver.find_element_by_xpath('/html/body/div[4]/div[1]/div[2]/div/div[4]/div[4]/select'))
     #        options = select_group.options
     #        options_by_year = []
 #
@@ -208,10 +213,15 @@ def get_schedule(group, weekday, weeknum):
     #driver = webdriver.Firefox(options=firefox_options)
     #driver = webdriver.Chrome(executable_path='chromedriver.exe')
     url = 'https://www.tu-bryansk.ru/education/schedule/'
+    #driver = webdriver.Chrome(executable_path=CHROMEDRIVER_PATH, chrome_options=chrome_options)
+    #driver.implicitly_wait(10)
     driver.get(url)
-    select_group = Select(driver.find_element_by_xpath('//*[@id="group"]'))
+    select_period = Select(driver.find_element_by_xpath('/html/body/div[4]/div[1]/div[2]/div/div[4]/div[1]/select'))
+    select_period.select_by_value('2020-2021_1_1')
+    time.sleep(1)
+    select_group = Select(driver.find_element_by_xpath('/html/body/div[4]/div[1]/div[2]/div/div[4]/div[4]/select'))
     select_group.select_by_value(group)
-    time.sleep(0.5)
+    time.sleep(1)
     td = driver.find_elements_by_tag_name('td')
     iter_index = -1
     for i in td:
