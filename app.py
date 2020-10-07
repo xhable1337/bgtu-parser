@@ -236,7 +236,7 @@ def get_schedule(group, weekday, weeknum):
                 subject = f"[Л] {subject}"
             elif subject_type == 'лабораторное занятие':
                 subject = f"[ЛАБ] {subject}"
-        if str(i).startswith('ауд. ') or str(i) == 'спортзал':
+        if str(i).startswith('ауд. ') or str(i) == 'спортзал' or re.match(r'\b[АБВ]\b', str(i)) or re.match(r'\b[АБ]\d\d\d\b', str(i)) or re.match(r'\b\d\d\d\b', str(i)) or re.match(r'\b\d\d\b', str(i)):
             room = str(i)
             if str(i).startswith('ауд. '):
                 room = room[5:]
@@ -280,7 +280,7 @@ def get_schedule(group, weekday, weeknum):
                 schedule[day]['1'][index][1], schedule[day]['1'][index][2] = subject, room
                 subject, room = '', ''
                 it += 1
-            elif str(td[iter_index - 1]).startswith('ауд. ') or str(td[iter_index - 1]) == 'спортзал':
+            elif str(td[iter_index - 1]).startswith('ауд. ') or str(td[iter_index - 1]) or re.match(r'\b[АБВ]\b', str(td[iter_index - 1])) or re.match(r'\b[АБ]\d\d\d\b', str(td[iter_index - 1])) or re.match(r'\b\d\d\d\b', str(td[iter_index - 1])) or re.match(r'\b\d\d\b', str(td[iter_index - 1]))== 'спортзал':
                 subject, room = no, no
                 schedule[day]['2'][index][1], schedule[day]['2'][index][2] = subject, room
                 subject, room = '', ''
