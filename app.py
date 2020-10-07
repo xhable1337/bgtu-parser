@@ -205,7 +205,15 @@ def get_schedule(group, weekday, weeknum):
         'Начертательная геометрия': 'Нач.геом.',
         'Математический анализ': 'Мат.ан.',
         'Высшая математика': 'Выс.мат.',
-        'Технология конструкционных материалов': 'Тех.КМ'
+        'Технология конструкционных материалов': 'Тех.КМ',
+        'Системы твердотельного моделирования': 'СТМ',
+        'Физическая культура и спорт. Общая физическая подготовка.': 'Физ-ра',
+        'История (история России, всеобщая история)': 'История',
+        'Экономика промышленного предприятия': 'ЭПП',
+        'Концепция современного естествознания': 'Конц.СЕ',
+        'Основы делопроизводства': 'Осн.делоп.',
+        'Микроэкономика': 'Микроэк.',
+        'Введение в электронику': 'Вв. в эл-ку'
 
         
     }
@@ -246,7 +254,7 @@ def get_schedule(group, weekday, weeknum):
                 subject = f"[Л] {subject}"
             elif subject_type == 'лабораторное занятие':
                 subject = f"[ЛАБ] {subject}"
-        if str(i).startswith('ауд. ') or str(i) == 'спортзал' or re.fullmatch(r'\b[АБВ]\b', str(i)) or re.fullmatch(r'\b[АБ]\d\d\d\b', str(i)) or re.fullmatch(r'\b\d\d\d\b', str(i)) or re.fullmatch(r'\b\d\d\b', str(i)):
+        if str(i).startswith('ауд. ') or str(i) == 'спортзал' or re.fullmatch(r'\b[АБВД]\b', str(i)) or re.fullmatch(r'\b[АБ]\d\d\d\b', str(i)) or re.fullmatch(r'\b\d\d\d\b', str(i)) or re.fullmatch(r'\b\d\d\d, *\d\d\d\b', str(i)) or str(i).upper() == 'УМ' or re.fullmatch(r'\b\d\d\b', str(i)) or str(i).startswith('ч/'):
             room = str(i)
             if str(i).startswith('ауд. '):
                 room = room[5:]
@@ -290,7 +298,7 @@ def get_schedule(group, weekday, weeknum):
                 schedule[day]['1'][index][1], schedule[day]['1'][index][2] = subject, room
                 subject, room = '', ''
                 it += 1
-            elif str(td[iter_index - 1]).startswith('ауд. ') or str(td[iter_index - 1]) or re.fullmatch(r'\b[АБВ]\b', str(td[iter_index - 1])) or re.fullmatch(r'\b[АБ]\d\d\d\b', str(td[iter_index - 1])) or re.fullmatch(r'\b\d\d\d\b', str(td[iter_index - 1])) or re.fullmatch(r'\b\d\d\b', str(td[iter_index - 1]))== 'спортзал':
+            elif str(td[iter_index - 1]).startswith('ауд. ') or str(td[iter_index - 1]) or re.fullmatch(r'\b[АБВД]\b', str(td[iter_index - 1])) or re.fullmatch(r'\b[АБ]\d\d\d\b', str(td[iter_index - 1])) or re.fullmatch(r'\b\d\d\d\b', str(td[iter_index - 1])) or re.fullmatch(r'\b\d\d\d, *\d\d\d\b', str(td[iter_index - 1])) or str(td[iter_index - 1]).upper() == 'УМ' or re.fullmatch(r'\b\d\d\b', str(td[iter_index - 1])) == 'спортзал' or str(td[iter_index - 1]).startswith('ч/'):
                 subject, room = no, no
                 schedule[day]['2'][index][1], schedule[day]['2'][index][2] = subject, room
                 subject, room = '', ''
