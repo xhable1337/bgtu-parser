@@ -31,8 +31,11 @@ import os
 
 #CHROME_BIN = os.environ['GOOGLE_CHROME_SHIM']
 #CHROMEDRIVER_PATH = '/app/chromedrivermanual'
-CHROMEDRIVER_PATH = os.environ.get('CHROMEDRIVER_PATH')
-CHROME_BIN = os.environ.get('CHROME_BIN')
+#CHROMEDRIVER_PATH = os.environ.get('CHROMEDRIVER_PATH')
+#CHROME_BIN = os.environ.get('CHROME_BIN')
+CHROMEDRIVER_PATH = 'chromedriver.exe'
+#CHROME_BIN = 
+
 
 chrome_options = webdriver.ChromeOptions()
 chrome_options.add_argument('--headless')
@@ -44,7 +47,7 @@ chrome_options.add_argument('--disable-browser-side-navigation')
 chrome_options.add_argument('--disable-gpu')
 chrome_options.add_argument("--window-size=1920,1080")
 chrome_options.add_argument("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/81.0.4044.138 Safari/537.36 OPR/68.0.3618.206 (Edition Yx GX)")
-chrome_options.binary_location = CHROME_BIN
+#chrome_options.binary_location = CHROME_BIN
 driver = webdriver.Chrome(executable_path=CHROMEDRIVER_PATH, chrome_options=chrome_options)
 driver.implicitly_wait(10)
 #firefox_options = webdriver.FirefoxOptions()
@@ -52,7 +55,9 @@ driver.implicitly_wait(10)
 
 
 server = Flask(__name__)
-password = os.environ.get('password')
+#password = os.environ.get('password')
+password = 'sample_value'
+
 #MONGODB_URI = os.environ['MONGODB_URI']
 #MONGODB_URI = 'mongodb://heroku_38n7vrr9:8pojct20ovk5sgvthiugo3kmpa@ds239055.mlab.com:39055/heroku_38n7vrr9'
 #client = MongoClient(host=MONGODB_URI, retryWrites=False) 
@@ -106,7 +111,7 @@ def get_groups(faculty='Факультет информационных техн
     #driver.implicitly_wait(10)
     driver.get(url) 
     select_period = Select(driver.find_element_by_xpath('/html/body/div[4]/div[1]/div[2]/div/div[4]/div[1]/select'))
-    select_period.select_by_value('2020-2021_1_1')
+    select_period.select_by_value('2020-2021_2_1')
     time.sleep(1)
     select_faculty = Select(driver.find_element_by_xpath('/html/body/div[4]/div[1]/div[2]/div/div[4]/div[2]/select'))
     select_faculty.select_by_value(faculty)
@@ -208,12 +213,17 @@ def get_schedule(group, weekday, weeknum):
         'Технология конструкционных материалов': 'Тех.КМ',
         'Системы твердотельного моделирования': 'СТМ',
         'Физическая культура и спорт. Общая физическая подготовка.': 'Физ-ра',
+        'Физическая культура и спорт. Общая физическая подготовка': 'Физ-ра',
         'История (история России, всеобщая история)': 'История',
         'Экономика промышленного предприятия': 'ЭПП',
         'Концепция современного естествознания': 'Конц.СЕ',
         'Основы делопроизводства': 'Осн.делоп.',
         'Микроэкономика': 'Микроэк.',
-        'Введение в электронику': 'Вв. в эл-ку'
+        'Введение в электронику': 'Вв. в эл-ку',
+        'Введение в программирование на языке Python': 'Вв. в Python',
+        'Учебная практика': 'Практика',
+        'Математическая логика и теория алгоритмов': 'Мат.лог. и ТА',
+        'Технологии личностно-профессионального развития': 'Технол. ЛПР'
 
         
     }
@@ -225,7 +235,7 @@ def get_schedule(group, weekday, weeknum):
     #driver.implicitly_wait(10)
     driver.get(url)
     select_period = Select(driver.find_element_by_xpath('/html/body/div[4]/div[1]/div[2]/div/div[4]/div[1]/select'))
-    select_period.select_by_value('2020-2021_1_1')
+    select_period.select_by_value('2020-2021_2_1')
     time.sleep(1)
     select_group = Select(driver.find_element_by_xpath('/html/body/div[4]/div[1]/div[2]/div/div[4]/div[4]/select'))
     select_group.select_by_value(group)
@@ -243,11 +253,12 @@ def get_schedule(group, weekday, weeknum):
         if re.match(r'\b\d\d:\d\d - \d\d:\d\d\b', i):
             it = 0
             index = lesson_times[i] - 1
-        if '\n' in i:
+        if '\n' in i and not re.fullmatch(r'([А-Яа-я]+. [А-Яа-я]. [А-Яа-я].(\n)*)+', str(i)):
+            print(f'{td.index(i)}) {i}')
             subject_type = i.split('\n')[1]
             subject = i.split('\n')[0]
-            if subject in subject_short:
-                subject = subject_short[subject]
+            #if subject in subject_short:
+            #    subject = subject_short[subject]
             if subject_type == 'практическое занятие':
                 subject = f"[ПЗ] {subject}"
             elif subject_type == 'лекция':
