@@ -1,41 +1,22 @@
-r"""Парсер сайта БГТУ и базы данных бота, который позволяет получать различную информацию.
+"""Парсер сайта БГТУ, который позволяет получать расписание и список групп.
 
 Возможности:
 
-• `get_schedule(group, weekday, weeknum)` - получить список с расписанием для заданной группы, дня недели и номера недели.
+• `get_schedule(group)` - получить список с расписанием для заданной группы.
 
-• `get_groups(faculty, year, force_update)` - получить список групп по заданным факультету и году.
-
-• `get_state(user_id)` - получить состояние по `user_id`.
-
-• `set_state(user_id, state)` - установить состояние `state` по `user_id`.
-
-• `get_group(user_id)` - получить группу по `user_id`.
-
-• `set_group(user_id, group)` - установить группу `group` по `user_id`.
+• `get_groups(faculty, year)` - получить список групп по заданным факультету и году.
 """
 
-
+from flask import Flask, request
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.ui import Select
-#from selenium.webdriver.support.ui import WebDriverWait
-#from selenium.webdriver.support import expected_conditions as EC
-#from selenium.webdriver.common.by import By
-#from pymongo import MongoClient
-from flask import Flask, request
-import time
-import re
 import datetime
 import os
+import re
+import time
 
-#CHROME_BIN = os.environ['GOOGLE_CHROME_SHIM']
-#CHROMEDRIVER_PATH = '/app/chromedrivermanual'
-#CHROMEDRIVER_PATH = os.environ.get('CHROMEDRIVER_PATH')
-#CHROME_BIN = os.environ.get('CHROME_BIN')
 CHROMEDRIVER_PATH = 'chromedriver.exe'
-#CHROME_BIN = 
-
 
 chrome_options = webdriver.ChromeOptions()
 chrome_options.add_argument('--headless')
@@ -50,40 +31,13 @@ chrome_options.add_argument("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebK
 #chrome_options.binary_location = CHROME_BIN
 driver = webdriver.Chrome(executable_path=CHROMEDRIVER_PATH, chrome_options=chrome_options)
 driver.implicitly_wait(10)
-#firefox_options = webdriver.FirefoxOptions()
-#firefox_options.headless = True
 
+#firefox_options.headless = True
+#firefox_options = webdriver.FirefoxOptions()
 
 server = Flask(__name__)
-#password = os.environ.get('password')
-password = 'sample_value'
-
-#MONGODB_URI = os.environ['MONGODB_URI']
-#MONGODB_URI = 'mongodb://heroku_38n7vrr9:8pojct20ovk5sgvthiugo3kmpa@ds239055.mlab.com:39055/heroku_38n7vrr9'
-#client = MongoClient(host=MONGODB_URI, retryWrites=False) 
-#db = client.heroku_38n7vrr9
-#schedule_db = db.schedule
-#groups_db = db.groups
-#users = db.users
-
-#UPDATE_TIME = 86400
-UPDATE_TIME = 2629743
-
-#def get_state(user_id):
-#    """Позволяет просмотреть state по user_id."""
-#    return users.find_one({'user_id': user_id})['state']
-#
-#def set_state(user_id, state):
-#    """Позволяет изменить state по user_id."""
-#    users.update_one({'user_id': user_id}, {'$set': {'state': state}})
-#
-#def get_group(user_id):
-#    """Позволяет просмотреть номер группы по user_id."""
-#    return users.find_one({'user_id': user_id})['group']
-#
-#def set_group(user_id, group):
-#    """Позволяет изменить номер группы по user_id."""
-#    users.update_one({'user_id': user_id}, {'$set': {'group': group}})
+password = 'sample_value' # Импровизированный пароль для предотвращения спама запросами к сайту БГТУ
+url = 'https://www.tu-bryansk.ru/education/schedule/' # URL сайта БГТУ, раздел с расписанием
 
 def get_groups(faculty='Факультет информационных технологий', year='20'):
     """Получает список групп по заданному факультету с сайта БГТУ, помещает в базу данных и выводит как результат функции.
@@ -101,13 +55,7 @@ def get_groups(faculty='Факультет информационных техн
     • `list` всех групп данного факультета и года поступления.
     """
     year = str(year)
-    #driver = webdriver.Chrome(executable_path=CHROMEDRIVER_PATH, chrome_options=chrome_options)
-    #executable_path=CHROMEDRIVER_PATH, 
-    #driver = webdriver.Firefox(options=firefox_options)    
-    #driver = webdriver.Chrome(executable_path='chromedriver.exe')
-    url = 'https://www.tu-bryansk.ru/education/schedule/'
     
-    #driver = webdriver.Chrome(executable_path=CHROMEDRIVER_PATH, chrome_options=chrome_options)
     #driver.implicitly_wait(10)
     driver.get(url) 
     select_period = Select(driver.find_element_by_xpath('/html/body/div[4]/div[1]/div[2]/div/div[4]/div[1]/select'))
@@ -116,8 +64,7 @@ def get_groups(faculty='Факультет информационных техн
     select_faculty = Select(driver.find_element_by_xpath('/html/body/div[4]/div[1]/div[2]/div/div[4]/div[2]/select'))
     select_faculty.select_by_value(faculty)
     time.sleep(1)
-    #element = WebDriverWait(driver, 30).until(EC.presence_of_element_located((By.XPATH, '//*[@id="group"]')))
-    #Select(element)
+
     select_group = Select(driver.find_element_by_xpath('/html/body/div[4]/div[1]/div[2]/div/div[4]/div[4]/select'))
     options = select_group.options
     options_by_year = []
@@ -129,61 +76,21 @@ def get_groups(faculty='Факультет информационных техн
         if option.startswith(f'О-{year}') and option.endswith('Б'):
             options_by_year.append(option)
 
-        #groups_db.insert_one({'faculty': faculty, 'year': year, 'groups': options_by_year, 'last_updated': time.time()})
-
-        #driver.quit()
-
     return options_by_year
-    
-    #else:
-    #    if force_update == True:
-    #        year = str(year)
-    #        #driver = webdriver.Chrome(executable_path=CHROMEDRIVER_PATH, chrome_options=chrome_options)
-    #        #driver = webdriver.Firefox(options=firefox_options)
-    #        #driver = webdriver.Chrome(executable_path='chromedriver.exe')
-    #        url = 'https://www.tu-bryansk.ru/education/schedule/'
-    #        driver.get(url)
-    #        select_faculty = Select(driver.find_element_by_xpath('/html/body/div[4]/div[1]/div[2]/div/div[4]/div[2]/select'))
-    #        select_faculty.select_by_value(faculty)
-    #        time.sleep(0.5)
-    #        select_group = Select(driver.find_element_by_xpath('/html/body/div[4]/div[1]/div[2]/div/div[4]/div[4]/select'))
-    #        options = select_group.options
-    #        options_by_year = []
-#
-    #        for option in options:
-    #                options[options.index(option)] = option.text
-#
-    #        for option in options:
-    #            if option.startswith(f'О-{year}'):
-    #                options_by_year.append(option)
-#
-    #        groups_db.update_one({'faculty': faculty, 'year': year}, {'$set': {'groups': options_by_year, 'last_updated': time.time()}})
-#
-    #        #driver.quit()
-#
-    #        return options_by_year
-    #    else:
-    #        return groups_db.find_one({'faculty': faculty, 'year': year})['groups']
 
-
-def get_schedule(group, weekday, weeknum):
-    """Получает расписание с сайта БГТУ и помещает в базу данных.
-
-    Если расписание обновлялось более суток назад/не существует в БД - оно автоматически обновится/добавится. 
+def get_schedule(group):
+    """Получает расписание с сайта БГТУ.
 
     На входе: 
     
     • `group` [str] - группа, для которой нужно получить расписание
 
-    • `weekday` [str] - английское название дня недели, для которого нужно получить расписание
-
-    • `weeknum` [int] - тип недели. 1 - нечётная, 2 - чётная.
-
     На выходе:
 
-    • `list` с расписанием на выбранный день.
+    • `dict` с расписанием группы на обе недели — чётную и нечётную.
     """
     no = '-'
+    days = {'Понедельник': 'monday', 'Вторник': 'tuesday', 'Среда': 'wednesday', 'Четверг': 'thursday', 'Пятница': 'friday', 'Суббота': 'saturday'}
     lesson_times = {'08:00 - 09:35': 1, '09:45 - 11:20': 2, '11:30 - 13:05': 3, '13:20 - 14:55': 4, '15:05 - 16:40': 5}
     schedule = {
     'group': group,
@@ -195,43 +102,7 @@ def get_schedule(group, weekday, weeknum):
     'friday': {'1': [[1, no, no], [2, no, no], [3, no, no], [4, no, no], [5, no, no]], '2': [[1, no, no], [2, no, no], [3, no, no], [4, no, no], [5, no, no]]},
     'saturday': {'1': [[1, no, no], [2, no, no], [3, no, no], [4, no, no], [5, no, no]], '2': [[1, no, no], [2, no, no], [3, no, no], [4, no, no], [5, no, no]]}
     }
-    subject_short = {
-        'Физическая культура и спорт': 'Физ-ра',
-        'Программирование': 'Прог.',
-        'Педагогика и психология': 'Псих-я',
-        'Информатика': 'Инф.',
-        'Алгебра и геометрия': 'Алг. и геом.',
-        'Иностранный язык': 'Ин.яз.',
-        'Дискретная математика': 'Дис.мат.',
-        'Эконимическая теория': 'Эк.теория',
-        'Экономическая теория': 'Эк.теория',
-        'Алгоритмические языки': 'Алг.языки',
-        'Языки программирования': 'Яз.прогр.',
-        'Начертательная геометрия': 'Нач.геом.',
-        'Математический анализ': 'Мат.ан.',
-        'Высшая математика': 'Выс.мат.',
-        'Технология конструкционных материалов': 'Тех.КМ',
-        'Системы твердотельного моделирования': 'СТМ',
-        'Физическая культура и спорт. Общая физическая подготовка.': 'Физ-ра',
-        'Физическая культура и спорт. Общая физическая подготовка': 'Физ-ра',
-        'История (история России, всеобщая история)': 'История',
-        'Экономика промышленного предприятия': 'ЭПП',
-        'Концепция современного естествознания': 'Конц.СЕ',
-        'Основы делопроизводства': 'Осн.делоп.',
-        'Микроэкономика': 'Микроэк.',
-        'Введение в электронику': 'Вв. в эл-ку',
-        'Введение в программирование на языке Python': 'Вв. в Python',
-        'Учебная практика': 'Практика',
-        'Математическая логика и теория алгоритмов': 'Мат.лог. и ТА',
-        'Технологии личностно-профессионального развития': 'Технол. ЛПР'
 
-        
-    }
-    #driver = webdriver.Chrome(executable_path=CHROMEDRIVER_PATH, chrome_options=chrome_options)
-    #driver = webdriver.Firefox(options=firefox_options)
-    #driver = webdriver.Chrome(executable_path='chromedriver.exe')
-    url = 'https://www.tu-bryansk.ru/education/schedule/'
-    #driver = webdriver.Chrome(executable_path=CHROMEDRIVER_PATH, chrome_options=chrome_options)
     #driver.implicitly_wait(10)
     driver.get(url)
     select_period = Select(driver.find_element_by_xpath('/html/body/div[4]/div[1]/div[2]/div/div[4]/div[1]/select'))
@@ -257,14 +128,18 @@ def get_schedule(group, weekday, weeknum):
             print(f'{td.index(i)}) {i}')
             subject_type = i.split('\n')[1]
             subject = i.split('\n')[0]
-            #if subject in subject_short:
-            #    subject = subject_short[subject]
+
             if subject_type == 'практическое занятие':
                 subject = f"[ПЗ] {subject}"
+                
             elif subject_type == 'лекция':
                 subject = f"[Л] {subject}"
+                
             elif subject_type == 'лабораторное занятие':
                 subject = f"[ЛАБ] {subject}"
+                
+            else:
+                subject = f"[{subject_type}] {subject}"
         if str(i).startswith('ауд. ') or str(i) == 'спортзал' or re.fullmatch(r'\b[АБВД]\b', str(i)) or re.fullmatch(r'\b[АБ]\d\d\d\b', str(i)) or re.fullmatch(r'\b\d\d\d\b', str(i)) or re.fullmatch(r'\b\d\d\d, *\d\d\d\b', str(i)) or str(i).upper() == 'УМ' or re.fullmatch(r'\b\d\d\b', str(i)) or str(i).startswith('ч/'):
             room = str(i)
             if str(i).startswith('ауд. '):
@@ -316,27 +191,22 @@ def get_schedule(group, weekday, weeknum):
                 it = 0
     iter_index = 0
     schedule['last_updated'] = time.time()
-    #if schedule_db.find_one({'group': group}) is None:
-    #    schedule_db.insert_one(schedule)
-    #    return schedule_db.find_one({'group': group})[weekday][f'{weeknum}']
-    #elif time.time() - schedule_db.find_one({'group': group})['last_updated'] > UPDATE_TIME:
-    #    schedule_db.update_one({'group': group}, {'$set': schedule})
-    #    return schedule_db.find_one({'group': group})[weekday][f'{weeknum}']
-    #driver.quit()
+
     return schedule
 
 @server.route('/')
-def hello_world():
+def index_page():
     return "OK", 200
 
 @server.route('/' + password + '/get_schedule/')
 def schedule_api():
     group = request.args.get('group')
-    weekday = request.args.get('weekday')
-    weeknum = request.args.get('weeknum')
-    schedule = get_schedule(group, weekday, weeknum)
+    
+    if group is None:
+        group = 'О-20-ИВТ-1-по-Б'
+        
+    schedule = get_schedule(group)
     return str(schedule), 200
-
 
 @server.route("/" + password + '/get_groups/')
 def groups_api():
@@ -351,19 +221,5 @@ def groups_api():
     groups = get_groups(faculty, year)
     return str(groups), 200
 
-
 if __name__ == "__main__":
     server.run(host="0.0.0.0", port=int(os.environ.get('PORT', '8443')))
-
-# How to use
-
-# 1. Get schedule list by group, weekday and weeknum
-# schedule = get_schedule('О-20-ИВТ-1-по-Б', 'friday', 2)
-
-# ---- Packing it in prettytable
-# for i in schedule:
-#     table.add_row(i)
-# print(table)
-
-# 2. Get groups list by faculty name
-# print(get_groups())
