@@ -1,6 +1,5 @@
 # [bgtu-parser](https://github.com/xhable1337/bgtu-parser) ­­— brand new parser for obtaining schedule <!-- omit in toc -->
 
-![](https://badgen.net/badge/python/3.7.3/green) [![](https://badgen.net/badge/icon/xhable?icon=telegram&label)](https://t.me/xhable) <!-- omit in toc -->
 ----------
 
 # Table of contents <!-- omit in toc -->
