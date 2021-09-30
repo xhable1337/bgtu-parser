@@ -7,7 +7,7 @@
 • `get_groups(faculty, year)` - получить список групп по заданным факультету и году.
 """
 
-from flask import Flask, request
+from flask import Flask, request, jsonify
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.ui import Select
@@ -90,23 +90,24 @@ def get_schedule(group):
     • `dict` с расписанием группы на обе недели — чётную и нечётную.
     """
     no = '-'
+    teachers = ''
     days = {'Понедельник': 'monday', 'Вторник': 'tuesday', 'Среда': 'wednesday', 'Четверг': 'thursday', 'Пятница': 'friday', 'Суббота': 'saturday'}
     lesson_times = {'08:00 - 09:35': 1, '09:45 - 11:20': 2, '11:30 - 13:05': 3, '13:20 - 14:55': 4, '15:05 - 16:40': 5}
     schedule = {
     'group': group,
     'last_updated': time.time(),
-    'monday': {'1': [[1, no, no], [2, no, no], [3, no, no], [4, no, no], [5, no, no]], '2': [[1, no, no], [2, no, no], [3, no, no], [4, no, no], [5, no, no]]},
-    'tuesday': {'1': [[1, no, no], [2, no, no], [3, no, no], [4, no, no], [5, no, no]], '2': [[1, no, no], [2, no, no], [3, no, no], [4, no, no], [5, no, no]]},
-    'wednesday': {'1': [[1, no, no], [2, no, no], [3, no, no], [4, no, no], [5, no, no]], '2': [[1, no, no], [2, no, no], [3, no, no], [4, no, no], [5, no, no]]},
-    'thursday': {'1': [[1, no, no], [2, no, no], [3, no, no], [4, no, no], [5, no, no]], '2': [[1, no, no], [2, no, no], [3, no, no], [4, no, no], [5, no, no]]},
-    'friday': {'1': [[1, no, no], [2, no, no], [3, no, no], [4, no, no], [5, no, no]], '2': [[1, no, no], [2, no, no], [3, no, no], [4, no, no], [5, no, no]]},
-    'saturday': {'1': [[1, no, no], [2, no, no], [3, no, no], [4, no, no], [5, no, no]], '2': [[1, no, no], [2, no, no], [3, no, no], [4, no, no], [5, no, no]]}
+    'monday': {'1': [[1, no, no, no], [2, no, no, no], [3, no, no, no], [4, no, no, no], [5, no, no, no]], '2': [[1, no, no, no], [2, no, no, no], [3, no, no, no], [4, no, no, no], [5, no, no, no]]},
+    'tuesday': {'1': [[1, no, no, no], [2, no, no, no], [3, no, no, no], [4, no, no, no], [5, no, no, no]], '2': [[1, no, no, no], [2, no, no, no], [3, no, no, no], [4, no, no, no], [5, no, no, no]]},
+    'wednesday': {'1': [[1, no, no, no], [2, no, no, no], [3, no, no, no], [4, no, no, no], [5, no, no, no]], '2': [[1, no, no, no], [2, no, no, no], [3, no, no, no], [4, no, no, no], [5, no, no, no]]},
+    'thursday': {'1': [[1, no, no, no], [2, no, no, no], [3, no, no, no], [4, no, no, no], [5, no, no, no]], '2': [[1, no, no, no], [2, no, no, no], [3, no, no, no], [4, no, no, no], [5, no, no, no]]},
+    'friday': {'1': [[1, no, no, no], [2, no, no, no], [3, no, no, no], [4, no, no, no], [5, no, no, no]], '2': [[1, no, no, no], [2, no, no, no], [3, no, no, no], [4, no, no, no], [5, no, no, no]]},
+    'saturday': {'1': [[1, no, no, no], [2, no, no, no], [3, no, no, no], [4, no, no, no], [5, no, no, no]], '2': [[1, no, no, no], [2, no, no, no], [3, no, no, no], [4, no, no, no], [5, no, no, no]]}
     }
 
     #driver.implicitly_wait(10)
     driver.get(url)
     select_period = Select(driver.find_element_by_xpath('/html/body/div[4]/div[1]/div[2]/div/div[4]/div[1]/select'))
-    select_period.select_by_value('2020-2021_2_1')
+    select_period.select_by_value('2021-2022_1_1')
     time.sleep(1)
     select_group = Select(driver.find_element_by_xpath('/html/body/div[4]/div[1]/div[2]/div/div[4]/div[4]/select'))
     select_group.select_by_value(group)
@@ -120,12 +121,12 @@ def get_schedule(group):
         if i in days:
             it = 0
             day = days[i]
-            subject, room = '', ''
+            subject, room, teachers = '', '', ''
         if re.match(r'\b\d\d:\d\d - \d\d:\d\d\b', i):
             it = 0
             index = lesson_times[i] - 1
         if '\n' in i and not re.fullmatch(r'([А-Яа-я]+. [А-Яа-я]. [А-Яа-я].(\n)*)+', str(i)):
-            print(f'{td.index(i)}) {i}')
+            # print(f'{td.index(i)}) {i}')
             subject_type = i.split('\n')[1]
             subject = i.split('\n')[0]
 
@@ -140,6 +141,9 @@ def get_schedule(group):
                 
             else:
                 subject = f"[{subject_type}] {subject}"
+        if re.fullmatch(r'([А-Яа-я]+. [А-Яа-я]. [А-Яа-я].(\n)*)+', str(i)):
+            teachers = ', '.join([teacher.strip() for teacher in str(i).split('\n')])
+            print(f"{subject} - {teachers}")
         if str(i).startswith('ауд. ') or str(i) == 'спортзал' or re.fullmatch(r'\b[АБВД]\b', str(i)) or re.fullmatch(r'\b[АБ]\d\d\d\b', str(i)) or re.fullmatch(r'\b\d\d\d\b', str(i)) or re.fullmatch(r'\b\d\d\d, *\d\d\d\b', str(i)) or str(i).upper() == 'УМ' or re.fullmatch(r'\b\d\d\b', str(i)) or str(i).startswith('ч/'):
             room = str(i)
             if str(i).startswith('ауд. '):
@@ -147,47 +151,47 @@ def get_schedule(group):
             try:
                 if re.match(r'\b\d\d:\d\d - \d\d:\d\d\b', td[iter_index + 1]) or td[iter_index + 1] in days or i == td[-1]:
                     if it == 0:
-                        schedule[day]['1'][index][1], schedule[day]['1'][index][2] = subject, room
-                        schedule[day]['2'][index][1], schedule[day]['2'][index][2] = subject, room
-                        subject, room = '', ''
+                        schedule[day]['1'][index][1], schedule[day]['1'][index][2], schedule[day]['1'][index][3] = subject, room, teachers
+                        schedule[day]['2'][index][1], schedule[day]['2'][index][2], schedule[day]['2'][index][3] = subject, room, teachers
+                        subject, room, teachers = '', '', ''
                     else:
-                        schedule[day]['2'][index][1], schedule[day]['2'][index][2] = subject, room
-                        subject, room = '', ''
+                        schedule[day]['2'][index][1], schedule[day]['2'][index][2], schedule[day]['2'][index][3] = subject, room, teachers
+                        subject, room, teachers = '', '', ''
                         it = 0
                 elif td[iter_index + 1] == '':
                     if it == 0:
-                        schedule[day]['1'][index][1], schedule[day]['1'][index][2] = subject, room
-                        schedule[day]['2'][index][1], schedule[day]['2'][index][2] = subject, room
-                        subject, room = '', ''
+                        schedule[day]['1'][index][1], schedule[day]['1'][index][2], schedule[day]['1'][index][3] = subject, room, teachers
+                        schedule[day]['2'][index][1], schedule[day]['2'][index][2], schedule[day]['2'][index][3] = subject, room, teachers
+                        subject, room, teachers = '', '', ''
                     else:
-                        schedule[day]['2'][index][1], schedule[day]['2'][index][2] = subject, room
-                        subject, room = '', ''
+                        schedule[day]['2'][index][1], schedule[day]['2'][index][2], schedule[day]['2'][index][3] = subject, room, teachers
+                        subject, room, teachers = '', '', ''
                         it = 0
                 else:
-                    schedule[day]['1'][index][1], schedule[day]['1'][index][2] = subject, room
-                    subject, room = '', ''
+                    schedule[day]['1'][index][1], schedule[day]['1'][index][2], schedule[day]['1'][index][3] = subject, room, teachers
+                    subject, room, teachers = '', '', ''
                     it += 1
             except IndexError:
                 if i == td[-1]:
                     if it == 0:
-                        schedule[day]['1'][index][1], schedule[day]['1'][index][2] = subject, room
-                        schedule[day]['2'][index][1], schedule[day]['2'][index][2] = subject, room
-                        subject, room = '', ''
+                        schedule[day]['1'][index][1], schedule[day]['1'][index][2], schedule[day]['1'][index][3] = subject, room, teachers
+                        schedule[day]['2'][index][1], schedule[day]['2'][index][2], schedule[day]['2'][index][3] = subject, room, teachers
+                        subject, room, teachers = '', '', ''
                     else:
-                        schedule[day]['2'][index][1], schedule[day]['2'][index][2] = subject, room
-                        subject, room = '', ''
+                        schedule[day]['2'][index][1], schedule[day]['2'][index][2], schedule[day]['2'][index][3] = subject, room, teachers
+                        subject, room, teachers = '', '', ''
                         it = 0
         if i == '':    
             td[iter_index], td[iter_index + 1], td[iter_index + 2] = no, 'Nobody N. O.', no
             if re.match(r'\b\d\d:\d\d - \d\d:\d\d\b', td[iter_index - 1]):
                 subject, room = no, no
-                schedule[day]['1'][index][1], schedule[day]['1'][index][2] = subject, room
-                subject, room = '', ''
+                schedule[day]['1'][index][1], schedule[day]['1'][index][2], schedule[day]['1'][index][3] = subject, room, teachers
+                subject, room, teachers = '', '', ''
                 it += 1
             elif str(td[iter_index - 1]).startswith('ауд. ') or str(td[iter_index - 1]) or re.fullmatch(r'\b[АБВД]\b', str(td[iter_index - 1])) or re.fullmatch(r'\b[АБ]\d\d\d\b', str(td[iter_index - 1])) or re.fullmatch(r'\b\d\d\d\b', str(td[iter_index - 1])) or re.fullmatch(r'\b\d\d\d, *\d\d\d\b', str(td[iter_index - 1])) or str(td[iter_index - 1]).upper() == 'УМ' or re.fullmatch(r'\b\d\d\b', str(td[iter_index - 1])) == 'спортзал' or str(td[iter_index - 1]).startswith('ч/'):
                 subject, room = no, no
-                schedule[day]['2'][index][1], schedule[day]['2'][index][2] = subject, room
-                subject, room = '', ''
+                schedule[day]['2'][index][1], schedule[day]['2'][index][2], schedule[day]['2'][index][3] = subject, room, teachers
+                subject, room, teachers = '', '', ''
                 it = 0
     iter_index = 0
     schedule['last_updated'] = time.time()
@@ -206,7 +210,7 @@ def schedule_api():
         group = 'О-20-ИВТ-1-по-Б'
         
     schedule = get_schedule(group)
-    return str(schedule), 200
+    return jsonify(schedule), 200
 
 @server.route("/" + password + '/get_groups/')
 def groups_api():
