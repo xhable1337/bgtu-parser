@@ -59,7 +59,7 @@ def get_groups(faculty='Факультет информационных техн
     #driver.implicitly_wait(10)
     driver.get(url) 
     select_period = Select(driver.find_element_by_xpath('/html/body/div[4]/div[1]/div[2]/div/div[4]/div[1]/select'))
-    select_period.select_by_value('2020-2021_2_1')
+    select_period.select_by_value('2021-2022_1_1')
     time.sleep(1)
     select_faculty = Select(driver.find_element_by_xpath('/html/body/div[4]/div[1]/div[2]/div/div[4]/div[2]/select'))
     select_faculty.select_by_value(faculty)
@@ -92,16 +92,24 @@ def get_schedule(group):
     no = '-'
     teachers = ''
     days = {'Понедельник': 'monday', 'Вторник': 'tuesday', 'Среда': 'wednesday', 'Четверг': 'thursday', 'Пятница': 'friday', 'Суббота': 'saturday'}
-    lesson_times = {'08:00 - 09:35': 1, '09:45 - 11:20': 2, '11:30 - 13:05': 3, '13:20 - 14:55': 4, '15:05 - 16:40': 5}
+    lesson_times = {
+        '08:00 - 09:35': 1, 
+        '09:45 - 11:20': 2, 
+        '11:30 - 13:05': 3, 
+        '13:20 - 14:55': 4, 
+        '15:05 - 16:40': 5, 
+        '16:50 - 18:25': 6,
+        '18:40 - 20:15': 7,
+        '18:40 - 20:25': 7}
     schedule = {
     'group': group,
     'last_updated': time.time(),
-    'monday': {'1': [[1, no, no, no], [2, no, no, no], [3, no, no, no], [4, no, no, no], [5, no, no, no]], '2': [[1, no, no, no], [2, no, no, no], [3, no, no, no], [4, no, no, no], [5, no, no, no]]},
-    'tuesday': {'1': [[1, no, no, no], [2, no, no, no], [3, no, no, no], [4, no, no, no], [5, no, no, no]], '2': [[1, no, no, no], [2, no, no, no], [3, no, no, no], [4, no, no, no], [5, no, no, no]]},
-    'wednesday': {'1': [[1, no, no, no], [2, no, no, no], [3, no, no, no], [4, no, no, no], [5, no, no, no]], '2': [[1, no, no, no], [2, no, no, no], [3, no, no, no], [4, no, no, no], [5, no, no, no]]},
-    'thursday': {'1': [[1, no, no, no], [2, no, no, no], [3, no, no, no], [4, no, no, no], [5, no, no, no]], '2': [[1, no, no, no], [2, no, no, no], [3, no, no, no], [4, no, no, no], [5, no, no, no]]},
-    'friday': {'1': [[1, no, no, no], [2, no, no, no], [3, no, no, no], [4, no, no, no], [5, no, no, no]], '2': [[1, no, no, no], [2, no, no, no], [3, no, no, no], [4, no, no, no], [5, no, no, no]]},
-    'saturday': {'1': [[1, no, no, no], [2, no, no, no], [3, no, no, no], [4, no, no, no], [5, no, no, no]], '2': [[1, no, no, no], [2, no, no, no], [3, no, no, no], [4, no, no, no], [5, no, no, no]]}
+    'monday': {'1': [[i, no, no, no] for i in range(1, 8)], '2': [[i, no, no, no] for i in range(1, 8)]},
+    'tuesday': {'1': [[i, no, no, no] for i in range(1, 8)], '2': [[i, no, no, no] for i in range(1, 8)]},
+    'wednesday': {'1': [[i, no, no, no] for i in range(1, 8)], '2': [[i, no, no, no] for i in range(1, 8)]},
+    'thursday': {'1': [[i, no, no, no] for i in range(1, 8)], '2': [[i, no, no, no] for i in range(1, 8)]},
+    'friday': {'1': [[i, no, no, no] for i in range(1, 8)], '2': [[i, no, no, no] for i in range(1, 8)]},
+    'saturday': {'1': [[i, no, no, no] for i in range(1, 8)], '2': [[i, no, no, no] for i in range(1, 8)]}
     }
 
     #driver.implicitly_wait(10)
@@ -144,7 +152,18 @@ def get_schedule(group):
         if re.fullmatch(r'([А-Яа-я]+. [А-Яа-я]. [А-Яа-я].(\n)*)+', str(i)):
             teachers = ', '.join([teacher.strip() for teacher in str(i).split('\n')])
             print(f"{subject} - {teachers}")
-        if str(i).startswith('ауд. ') or str(i) == 'спортзал' or re.fullmatch(r'\b[АБВД]\b', str(i)) or re.fullmatch(r'\b[АБ]\d\d\d\b', str(i)) or re.fullmatch(r'\b\d\d\d\b', str(i)) or re.fullmatch(r'\b\d\d\d, *\d\d\d\b', str(i)) or str(i).upper() == 'УМ' or re.fullmatch(r'\b\d\d\b', str(i)) or str(i).startswith('ч/'):
+
+        if (str(i).startswith('ауд. ') 
+            or str(i) == 'спортзал' 
+            or re.fullmatch(r'\b[АБВД]\b', str(i)) 
+            or re.fullmatch(r'\b[АБ]\d\d\d\b', str(i)) 
+            or re.fullmatch(r'\b\d\d\d\b', str(i)) 
+            or '/' in str(i)
+            or re.fullmatch(r'\b\d\d\d, *\d\d\d\b', str(i)) 
+            or str(i).upper() == 'УМ' 
+            or re.fullmatch(r'\b\d\d\b', str(i)) 
+            or str(i).startswith('ч/')
+        ):
             room = str(i)
             if str(i).startswith('ауд. '):
                 room = room[5:]
