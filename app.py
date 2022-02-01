@@ -59,7 +59,7 @@ def get_groups(faculty='Факультет информационных техн
     #driver.implicitly_wait(10)
     driver.get(url) 
     select_period = Select(driver.find_element_by_xpath('/html/body/div[4]/div[1]/div[2]/div/div[4]/div[1]/select'))
-    select_period.select_by_value('2021-2022_1_1')
+    select_period.select_by_value('2021-2022_2_1')
     time.sleep(1)
     select_faculty = Select(driver.find_element_by_xpath('/html/body/div[4]/div[1]/div[2]/div/div[4]/div[2]/select'))
     select_faculty.select_by_value(faculty)
