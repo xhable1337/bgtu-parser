@@ -115,7 +115,7 @@ def get_schedule(group):
     #driver.implicitly_wait(10)
     driver.get(url)
     select_period = Select(driver.find_element_by_xpath('/html/body/div[4]/div[1]/div[2]/div/div[4]/div[1]/select'))
-    select_period.select_by_value('2021-2022_1_1')
+    select_period.select_by_value('2021-2022_2_1')
     time.sleep(1)
     select_group = Select(driver.find_element_by_xpath('/html/body/div[4]/div[1]/div[2]/div/div[4]/div[4]/select'))
     select_group.select_by_value(group)
