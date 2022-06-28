@@ -454,22 +454,8 @@ class Parser:
             if week_type == 'both':
                 schedule[day]['odd'].append(lesson)
                 schedule[day]['even'].append(lesson)
-
-                # schedule[day]['odd'][index]['number'] = index + 1
-                # schedule[day]['odd'][index]['subject'] = subject
-                # schedule[day]['odd'][index]['room'] = room
-                # schedule[day]['odd'][index]['teacher'] = teacher
-
-                # schedule[day]['even'][index]['number'] = index + 1
-                # schedule[day]['even'][index]['subject'] = subject
-                # schedule[day]['even'][index]['room'] = room
-                # schedule[day]['even'][index]['teacher'] = teacher
             else:
                 schedule[day][week_type].append(lesson)
-                # schedule[day][week_type][index]['number'] = index + 1
-                # schedule[day][week_type][index]['subject'] = subject
-                # schedule[day][week_type][index]['room'] = room
-                # schedule[day][week_type][index]['teacher'] = teacher
 
         return schedule
 
