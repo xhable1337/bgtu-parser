@@ -1,19 +1,23 @@
+"""bgtu_parser.py
+
+Этот модуль представляет собой парсер веб-сайта БГТУ.
+"""
+from copy import deepcopy
 from datetime import datetime
-import re
 import time
 
 from selenium import webdriver
 from selenium.webdriver.support.ui import Select
-from copy import deepcopy
 import requests
-import asyncio
 
 from bs4 import BeautifulSoup, Tag
-from bs4 import PageElement
 from rss_parser import Parser as RSSParser
 
 
 class Parser:
+    """Объект парсера сайта БГТУ.
+    """
+
     def __init__(self,
                  chromedriver_path: str = 'chromedriver.exe',
                  headless: bool = True) -> None:
@@ -44,11 +48,16 @@ class Parser:
 
         self.driver.implicitly_wait(10)
 
-    def get_initials(self, name: str):
-        ln, fn, pn = name.split(' ')
-        return f"{ln} {fn[0]}. {pn[0]}."
+    def _get_initials(self, name: str):
+        l_n, f_n, p_n = name.split(' ')
+        return f"{l_n} {f_n[0]}. {p_n[0]}."
 
-    def teacher_list_v2(self):
+    def teacher_list_v2(self) -> list:
+        """Парсинг списка преподавателей.
+
+        Возвращает:
+            list[str]: список преподавателей
+        """
         params = {'form': 'teacher'}
         page = requests.get(self.url, params)
         soup = BeautifulSoup(page.text, 'html.parser')
@@ -57,25 +66,33 @@ class Parser:
         options = [option.text.replace('_', ' ') for option in options][1:]
         return options
 
-    def teacher_list(self):
-        period = '2021-2022_2_1'
+    def _period(self) -> str:
+        page = requests.get(self.url)
+        soup = BeautifulSoup(page.text, 'html.parser')
+        combobox = soup.find('select', {'id': 'period'})
+        options = combobox.find_all('option')
+        period = str(options[0]['value'])
 
-        self.driver.get(
-            self.url + f'?period={period}&form=teacher')
+        if period.endswith('2'):
+            #! Если период заканчивается на 2, это расписание сессии
+            period = str(options[1]['value'])
 
-        time.sleep(0.5)
+        return period
 
-        teacher_combobox = Select(
-            self.driver.find_element_by_xpath('//*[@id="teacher"]'))
+    def teacher_schedule_v2(self, teacher: str) -> dict:
+        """Парсинг расписания преподавателя.
 
-        teachers = [option.text for option in teacher_combobox.options]
+        Аргументы:
+            teacher (str): полное ФИО преподавателя
 
-        return teachers[1:]
-
-    def teacher_schedule_v2(self, teacher: str):
+        Возвращает:
+            dict: словарь с расписанием преподавателя
+        """
+        # pylint: disable=R0914,R0915
+        # Большое кол-во локальных переменных и if-else обусловлено
+        # сложным форматом расписания на сайте
         if not teacher:
             return None
-        no = '-'
 
         days = {'Понедельник': 'monday', 'Вторник': 'tuesday', 'Среда': 'wednesday',
                 'Четверг': 'thursday', 'Пятница': 'friday', 'Суббота': 'saturday'}
@@ -97,18 +114,18 @@ class Parser:
             'even': [
                 {
                     'number': i,
-                    'subject': no,
-                    'room': no,
-                    'group': no
+                    'subject': '-',
+                    'room': '-',
+                    'group': '-'
                 }
                 for i in range(1, 9)
             ],
             'odd': [
                 {
                     'number': i,
-                    'subject': no,
-                    'room': no,
-                    'group': no
+                    'subject': '-',
+                    'room': '-',
+                    'group': '-'
                 }
                 for i in range(1, 9)
             ],
@@ -127,7 +144,7 @@ class Parser:
         params = {
             'namedata': 'schedule',
             'teacher': teacher.replace(" ", "_"),
-            'period': '2021-2022_2_1',
+            'period': self._period(),
             'form': 'teacher'
         }
         page = requests.get(self.url + '/schedule.ajax.php', params)
@@ -140,7 +157,7 @@ class Parser:
         week_type = 'both'
 
         # Время пары
-        time = ''
+        lesson_time = ''
 
         for row in rows:
             #! День недели
@@ -157,14 +174,14 @@ class Parser:
 
             elif time_cell.has_attr('rowspan'):
                 # ? Есть rowspan => первая пара в разделе
-                time = time_cell.text.lstrip()
-                index = lesson_times[time] - 1
+                lesson_time = time_cell.text.lstrip()
+                index = lesson_times[lesson_time] - 1
                 week_type = 'odd'
 
             else:
                 # ? Есть время, нет rowspan => обычная пара
-                time = time_cell.text.lstrip()
-                index = lesson_times[time] - 1
+                lesson_time = time_cell.text.lstrip()
+                index = lesson_times[lesson_time] - 1
                 week_type = 'both'
 
             #! Предмет
@@ -186,12 +203,8 @@ class Parser:
             elif subject_type == 'лабораторное занятие':
                 subject = f"[ЛАБ] {subject_name}"
 
-            print(subject)
-
             #! Группа
             group_cell = row.select_one('.schteacher')
-            print(group_cell.text)
-            print(group_cell.text.split('.'))
 
             group = ', '.join([group.strip()
                                for group in group_cell.text.split('.')][:-1])
@@ -199,8 +212,6 @@ class Parser:
             #! Аудитория
             room_cell = row.select_one('.schclass')
             room = room_cell.text
-
-            # if splitted
 
             #! Добавление данных в результирующий словарь
             if week_type == 'both':
@@ -221,10 +232,18 @@ class Parser:
 
         return schedule
 
-    def teacher_info_v2(self, name: str):
+    def teacher_info_v2(self, name: str) -> dict:
+        """Парсинг информации о преподавателе по полному ФИО.
+
+        Аргументы:
+            name (str): имя преподавателя
+
+        Возвращает:
+            dict: словарь с информацией о преподавателе
+        """
         teacher = {
             'name': name,
-            'initials': self.get_initials(name),
+            'initials': self._get_initials(name),
             'faculty': None,
             'department': None,
             'phone': None,
@@ -237,6 +256,7 @@ class Parser:
         page = requests.get(url)
         soup = BeautifulSoup(page.text, 'html.parser')
         teacher_card = soup.find('div', {'class': 'fio'}, string=name)
+        nophoto = 'https://www.tu-bryansk.ru/local/templates/bstu/img/nophoto.svg'
 
         # ? Если не найдено имя на странице
         if not teacher_card:
@@ -270,30 +290,31 @@ class Parser:
             if img_field:
                 teacher['img_src'] = str(self.base_url + str(img_field))
             else:
-                teacher['img_src'] = 'https://www.tu-bryansk.ru/local/templates/bstu/img/nophoto.svg'
+                teacher['img_src'] = nophoto
 
         return teacher
 
     def groups(self, faculty: str = 'Факультет информационных технологий', year: str = '20'):
-        """Получает список групп по заданному факультету с сайта БГТУ, и выводит как результат функции.
+        """Получает список групп по заданному факультету с сайта БГТУ
+        и выводит как результат функции.
 
-        На входе:
+        Аргументы:
+            faculty (str) - полное название факультета.
 
-        • `faculty` [str] - полное название факультета.
+            year (str) - год поступления группы.
 
-        • `year` [str] - год поступления группы.
-
-        На выходе:
-
-        • `list` всех групп данного факультета и года поступления.
+        Возвращает:
+            list: список всех групп данного факультета и года поступления.
         """
         year = str(year)
+        if len(year) != 2:
+            year = year[2:]
         self.driver.get(self.url)
 
         # Выбор периода времени в комбо-боксе
         select_period = Select(self.driver.find_element_by_xpath(
             '/html/body/div[4]/div[1]/div[2]/div/div[4]/div[1]/select'))
-        select_period.select_by_value('2021-2022_2_1')
+        select_period.select_by_value(self._period())
         time.sleep(1)
 
         # Выбор факультета в комбо-боксе
@@ -319,8 +340,15 @@ class Parser:
 
         return options_by_year
 
-    def teacher(self, name: str):
-        """Возвращает преподавателя по имени (информация и расписание)."""
+    def teacher(self, name: str) -> dict:
+        """Возвращает преподавателя с расписанием по полному ФИО.
+
+        Аргументы:
+            name (str): полное ФИО преподавателя
+
+        Возвращает:
+            dict: словарь с полной информацией о преподавателе
+        """
         schedule = self.teacher_schedule_v2(name)
 
         if not schedule:
@@ -331,7 +359,17 @@ class Parser:
         return info
 
     def schedule_v2(self, group: str):
-        no = '-'
+        """Парсит расписание заданной группы.
+
+        Аргументы:
+            group (str): полное название группы
+
+        Возвращает:
+            dict: словарь с расписанием группы
+        """
+        # pylint: disable=R0914,R0915
+        # Большое кол-во локальных переменных и if-else обусловлено
+        # сложным форматом расписания на сайте
         teacher = ''
         days = {'Понедельник': 'monday', 'Вторник': 'tuesday', 'Среда': 'wednesday',
                 'Четверг': 'thursday', 'Пятница': 'friday', 'Суббота': 'saturday'}
@@ -368,7 +406,7 @@ class Parser:
         params = {
             'namedata': 'schedule',
             'group': group,
-            'period': '2021-2022_2_1',
+            'period': self._period(),
             'form': 'очная'
         }
         page = requests.get(self.url + '/schedule.ajax.php', params)
@@ -377,14 +415,11 @@ class Parser:
 
         row: Tag
 
-        # Разделена ли ячейка
-        splitted = False
-
         # Тип недели
         week_type = 'both'
 
         # Время пары
-        time = ''
+        lesson_time = ''
 
         for row in rows:
             #! День недели
@@ -397,22 +432,19 @@ class Parser:
 
             if not time_cell:
                 # ? Времени нет => вторая пара в разделе
-                splitted = False
                 week_type = 'even'
 
             elif time_cell.has_attr('rowspan'):
                 # ? Есть rowspan => первая пара в разделе
-                time = time_cell.text.lstrip()
-                index = lesson_times[time] - 1
-                splitted = True
+                lesson_time = time_cell.text.lstrip()
+                index = lesson_times[lesson_time] - 1
                 week_type = 'odd'
 
             else:
                 # ? Есть время, нет rowspan => обычная пара
-                time = time_cell.text.lstrip()
-                index = lesson_times[time] - 1
+                lesson_time = time_cell.text.lstrip()
+                index = lesson_times[lesson_time] - 1
                 week_type = 'both'
-                splitted = False
 
             #! Предмет
             subject_cell = row.select_one('.schname')
@@ -459,8 +491,10 @@ class Parser:
 
         return schedule
 
-    def news(self):
+    def _news(self):
+        # REVIEW: надо полностью перенести метод получения новостей сюда
         url = self.base_url + "/info/press.rss/reviews"
         xml = requests.get(url)
         parser = RSSParser(xml=xml.content)
         feed = parser.parse()
+        return feed
