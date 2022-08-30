@@ -48,7 +48,8 @@ class Parser:
 
         self.driver.implicitly_wait(10)
 
-    def _get_initials(self, name: str):
+    @staticmethod
+    def _get_initials(name: str):
         l_n, f_n, p_n = name.split(' ')
         return f"{l_n} {f_n[0]}. {p_n[0]}."
 
@@ -306,6 +307,8 @@ class Parser:
         Возвращает:
             list: список всех групп данного факультета и года поступления.
         """
+        # pylint: disable=no-member
+        # Ложно-позитивный результат на find_element_by_xpath()
         year = str(year)
         if len(year) != 2:
             year = year[2:]
@@ -468,8 +471,9 @@ class Parser:
             #! Преподаватель
             teacher_cell = row.select_one('.schteacher')
 
-            teacher = ', '.join([teacher.strip()
-                                for teacher in teacher_cell.text.split('\n')])
+            teacher = ', '.join(
+                [teacher.strip() for teacher in teacher_cell.text.split('\n')]
+            )
 
             #! Аудитория
             room_cell = row.select_one('.schclass')
