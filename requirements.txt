@@ -1,4 +1,7 @@
-selenium
+beautifulsoup4
 fastapi
 pydantic
+requests
+rss_parser
+selenium
 uvicorn
