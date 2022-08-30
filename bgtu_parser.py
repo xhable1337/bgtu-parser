@@ -60,7 +60,7 @@ class Parser:
             list[str]: список преподавателей
         """
         params = {'form': 'teacher'}
-        page = requests.get(self.url, params)
+        page = requests.get(self.url, params, timeout=15)
         soup = BeautifulSoup(page.text, 'html.parser')
         combobox = soup.find('select', {'id': 'teacher'})
         options = combobox.find_all('option')
@@ -68,7 +68,7 @@ class Parser:
         return options
 
     def _period(self) -> str:
-        page = requests.get(self.url)
+        page = requests.get(self.url, timeout=15)
         soup = BeautifulSoup(page.text, 'html.parser')
         combobox = soup.find('select', {'id': 'period'})
         options = combobox.find_all('option')
@@ -148,7 +148,8 @@ class Parser:
             'period': self._period(),
             'form': 'teacher'
         }
-        page = requests.get(self.url + '/schedule.ajax.php', params)
+        page = requests.get(
+            self.url + '/schedule.ajax.php', params, timeout=15)
         soup = BeautifulSoup(page.text, 'html.parser')
         rows = soup.find_all('tr')
 
@@ -254,7 +255,7 @@ class Parser:
         }
 
         url = f'{self.base_url}/sveden/employees/'
-        page = requests.get(url)
+        page = requests.get(url, timeout=15)
         soup = BeautifulSoup(page.text, 'html.parser')
         teacher_card = soup.find('div', {'class': 'fio'}, string=name)
         nophoto = 'https://www.tu-bryansk.ru/local/templates/bstu/img/nophoto.svg'
@@ -412,7 +413,8 @@ class Parser:
             'period': self._period(),
             'form': 'очная'
         }
-        page = requests.get(self.url + '/schedule.ajax.php', params)
+        page = requests.get(
+            self.url + '/schedule.ajax.php', params, timeout=15)
         soup = BeautifulSoup(page.text, 'html.parser')
         rows = soup.find_all('tr')
 
@@ -498,7 +500,7 @@ class Parser:
     def _news(self):
         # REVIEW: надо полностью перенести метод получения новостей сюда
         url = self.base_url + "/info/press.rss/reviews"
-        xml = requests.get(url)
+        xml = requests.get(url, timeout=15)
         parser = RSSParser(xml=xml.content)
         feed = parser.parse()
         return feed

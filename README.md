@@ -1,6 +1,6 @@
 <h1 align=center><a href="https://github.com/xhable1337/bgtu-parser">bgtu-parser</a> — brand new parser for obtaining schedule</h1>
 
-<h2 align=center>v2.0.0 — rebase to FastAPI, refactoring</h2>
+<h2 align=center>v2.1.2 — rebase to FastAPI, refactoring</h2>
 
 # Table of contents
 
@@ -51,10 +51,10 @@ There are all of the requests you can perform, using [bgtu-parser](https://githu
 
 - [x] Create a parser, fill it with basic function — obtaining schedule
 - [x] Add obtaining the group list feature
-- [x] Refactor all the code so it don’t look messy and full of unnecessary comments
+- [x] Refactor all the code so it doesn’t look messy and full of unnecessary comments
 - [x] Rebase on [FastAPI](https://fastapi.tiangolo.com)
-- [ ] Add a function to get a departments, faculties and infromation about them
-- [ ] Add a feature to get information about teachers and their schedule
+- [x] Add a feature to get information about teachers and their schedule
+- [ ] Add a function to get a departments, faculties and information about them
 
 # Credits
 
