@@ -339,7 +339,7 @@ class Parser:
             options[options.index(option)] = option.text
 
         for option in options:
-            if option[2:].startswith(f'О-{year}'):
+            if option[2:].startswith(f'{year}'):
                 options_by_year.append(option)
 
         return options_by_year
