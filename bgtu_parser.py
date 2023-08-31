@@ -316,19 +316,19 @@ class Parser:
         self.driver.get(self.url)
 
         # Выбор периода времени в комбо-боксе
-        select_period = Select(self.driver.find_element_by_xpath(
+        select_period = Select(self.driver.find_element('xpath',
             '/html/body/div[4]/div[1]/div[2]/div/div[4]/div[1]/select'))
         select_period.select_by_value(self._period())
         time.sleep(1)
 
         # Выбор факультета в комбо-боксе
-        select_faculty = Select(self.driver.find_element_by_xpath(
+        select_faculty = Select(self.driver.find_element('xpath',
             '/html/body/div[4]/div[1]/div[2]/div/div[4]/div[2]/select'))
         select_faculty.select_by_value(faculty)
         time.sleep(1)
 
         # Выбор группы в комбо-боксе
-        select_group = Select(self.driver.find_element_by_xpath(
+        select_group = Select(self.driver.find_element('xpath',
             '/html/body/div[4]/div[1]/div[2]/div/div[4]/div[4]/select'))
         options = select_group.options
 
