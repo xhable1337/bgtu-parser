@@ -80,6 +80,10 @@ class Parser:
 
         return period
 
+    @property
+    def period(self) -> str:
+        return self._period()
+
     def teacher_schedule_v2(self, teacher: str) -> dict:
         """Парсинг расписания преподавателя.
 
@@ -145,7 +149,7 @@ class Parser:
         params = {
             'namedata': 'schedule',
             'teacher': teacher.replace(" ", "_"),
-            'period': self._period(),
+            'period': self.period,
             'form': 'teacher'
         }
         page = requests.get(
@@ -317,19 +321,19 @@ class Parser:
 
         # Выбор периода времени в комбо-боксе
         select_period = Select(self.driver.find_element('xpath',
-            '/html/body/div[4]/div[1]/div[2]/div/div[4]/div[1]/select'))
-        select_period.select_by_value(self._period())
+                                                        '/html/body/div[4]/div[1]/div[2]/div/div[4]/div[1]/select'))
+        select_period.select_by_value(self.period)
         time.sleep(1)
 
         # Выбор факультета в комбо-боксе
         select_faculty = Select(self.driver.find_element('xpath',
-            '/html/body/div[4]/div[1]/div[2]/div/div[4]/div[2]/select'))
+                                                         '/html/body/div[4]/div[1]/div[2]/div/div[4]/div[2]/select'))
         select_faculty.select_by_value(faculty)
         time.sleep(1)
 
         # Выбор группы в комбо-боксе
         select_group = Select(self.driver.find_element('xpath',
-            '/html/body/div[4]/div[1]/div[2]/div/div[4]/div[4]/select'))
+                                                       '/html/body/div[4]/div[1]/div[2]/div/div[4]/div[4]/select'))
         options = select_group.options
 
         # Заполнение списка всех групп из вариантов комбо-бокса
@@ -410,7 +414,7 @@ class Parser:
         params = {
             'namedata': 'schedule',
             'group': group,
-            'period': self._period(),
+            'period': self.period,
             'form': 'очная'
         }
         page = requests.get(
