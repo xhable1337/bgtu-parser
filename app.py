@@ -6,8 +6,8 @@
 import os
 from typing import List
 
-from fastapi import FastAPI, Query, HTTPException
 import uvicorn
+from fastapi import FastAPI, HTTPException, Query
 
 from bgtu_parser import Parser
 from models import Schedule, Teacher, TeacherSchedule
@@ -29,20 +29,20 @@ app = FastAPI(title="API БГТУ (Unofficial)",
 @app.get("/api/v2/schedule",
          response_model=Schedule,
          summary="Расписание заданной группы",
-         tags=("Методы API",))
+         tags=("Студенты",))
 def get_schedule(group: str = Query(
         default=None,
         description='Группа, для которой ведётся парсинг расписания',
         example='О-20-ИВТ-1-по-Б'
 )):
     """Парсит и возвращает расписание для заданной группы на всё полугодие."""
-    return parser.schedule_v2(group)
+    return parser.schedule(group)
 
 
 @app.get("/api/v2/groups",
          response_model=List[str],
          summary="Список групп по факультету и году поступления",
-         tags=("Методы API",))
+         tags=("Студенты",))
 def get_groups(
         faculty: str = Query(
             default=None,
@@ -62,16 +62,16 @@ def get_groups(
 @app.get("/api/v2/teacher_list",
          response_model=List[str],
          summary="Список имён преподавателей",
-         tags=("Методы API",))
+         tags=("Преподаватели",))
 def get_teacher_list():
     """Парсит и возвращает список имён всех преподавателей."""
-    return parser.teacher_list_v2()
+    return parser.teacher_list()
 
 
 @app.get("/api/v2/teacher_info",
          response_model=Teacher,
          summary="Информация о преподавателе",
-         tags=("Методы API",))
+         tags=("Преподаватели",))
 def get_teacher_info(
         name: str = Query(
             default=None,
@@ -80,26 +80,26 @@ def get_teacher_info(
         )
 ):
     """Парсит и возвращает информацию о заданном преподавателе."""
-    return parser.teacher_info_v2(name)
+    return parser.teacher_info(name)
 
 
 @app.get("/api/v2/teacher",
          response_model=Teacher,
          summary="Преподаватель",
-         tags=("Методы API",))
+         tags=("Преподаватели",))
 def get_teacher(name: str = Query(
         default=None,
         description='Имя преподавателя',
         example='Трубаков Евгений Олегович'
 )):
     """Парсит и возвращает преподавателя (информация и расписание)."""
-    schedule = parser.teacher_schedule_v2(name)
+    schedule = parser.teacher_schedule(name)
 
     if not schedule:
         raise HTTPException(
             status_code=404, detail="У преподавателя нет расписания")
 
-    info = parser.teacher_info_v2(name)
+    info = parser.teacher_info(name)
     info['schedule'] = schedule
     return info
 
@@ -107,7 +107,7 @@ def get_teacher(name: str = Query(
 @app.get("/api/v2/teacher_schedule",
          response_model=TeacherSchedule,
          summary="Расписание преподавателя",
-         tags=("Методы API",))
+         tags=("Преподаватели",))
 def get_teacher_schedule(
         teacher: str = Query(
             default=None,
@@ -116,7 +116,7 @@ def get_teacher_schedule(
         )
 ):
     """Парсит и возвращает расписание заданного преподавателя."""
-    return parser.teacher_schedule_v2(teacher)
+    return parser.teacher_schedule(teacher)
 
 
 if __name__ == "__main__":

@@ -12,6 +12,7 @@ import requests
 
 from bs4 import BeautifulSoup, Tag
 from rss_parser import Parser as RSSParser
+from cachetools.func import ttl_cache
 
 
 class Parser:
@@ -24,36 +25,12 @@ class Parser:
         self.url = 'https://www.tu-bryansk.ru/education/schedule'
         self.base_url = 'https://www.tu-bryansk.ru'
 
-        chrome_options = webdriver.ChromeOptions()
-        chrome_options.add_argument('--ignore-certificate-errors')
-        chrome_options.add_argument('--disable-infobars')
-        chrome_options.add_argument(
-            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTM"
-            "L, like Gecko) Chrome/81.0.4044.138 Safari/537.36 OPR/68.0.3618.20"
-            "6 (Edition Yx GX)"
-        )
-
-        if headless:
-            chrome_options.add_argument('--headless')
-            chrome_options.add_argument('--no-sandbox')
-            chrome_options.add_argument('--disable-dev-shm-usage')
-            chrome_options.add_argument('--disable-browser-side-navigation')
-            chrome_options.add_argument('--disable-gpu')
-            chrome_options.add_argument("--window-size=1920,1080")
-
-        self.driver = webdriver.Chrome(
-            executable_path=chromedriver_path,
-            chrome_options=chrome_options
-        )
-
-        self.driver.implicitly_wait(10)
-
     @staticmethod
     def _get_initials(name: str):
         l_n, f_n, p_n = name.split(' ')
         return f"{l_n} {f_n[0]}. {p_n[0]}."
 
-    def teacher_list_v2(self) -> list:
+    def teacher_list(self) -> list:
         """Парсинг списка преподавателей.
 
         Возвращает:
@@ -67,11 +44,12 @@ class Parser:
         options = [option.text.replace('_', ' ') for option in options][1:]
         return options
 
-    def _period(self) -> str:
+    # Кэш на 7 дней
+    @ttl_cache(ttl=604800)
+    def _get_period(self) -> str:
         page = requests.get(self.url, timeout=15)
         soup = BeautifulSoup(page.text, 'html.parser')
-        combobox = soup.find('select', {'id': 'period'})
-        options = combobox.find_all('option')
+        options = soup.select('select#period option')
         period = str(options[0]['value'])
 
         if period.endswith('2'):
@@ -82,9 +60,9 @@ class Parser:
 
     @property
     def period(self) -> str:
-        return self._period()
+        return self._get_period()
 
-    def teacher_schedule_v2(self, teacher: str) -> dict:
+    def teacher_schedule(self, teacher: str) -> dict:
         """Парсинг расписания преподавателя.
 
         Аргументы:
@@ -238,7 +216,7 @@ class Parser:
 
         return schedule
 
-    def teacher_info_v2(self, name: str) -> dict:
+    def teacher_info(self, name: str) -> dict:
         """Парсинг информации о преподавателе по полному ФИО.
 
         Аргументы:
@@ -300,53 +278,31 @@ class Parser:
 
         return teacher
 
-    def groups(self, faculty: str = 'Факультет информационных технологий', year: str = '20'):
-        """Получает список групп по заданному факультету с сайта БГТУ
-        и выводит как результат функции.
+    def groups(self, faculty: str = 'Факультет информационных технологий', year: str = None):
+        if year:
+            year = str(year)
+            if len(year) > 2:
+                year = year[2:]
+            if not year.isdigit():
+                raise ValueError('Incorrect year string')
 
-        Аргументы:
-            faculty (str) - полное название факультета.
+        params = {
+            'namedata': 'group',
+            'period': self.period,
+            'form': 'очная',
+            'faculty': faculty
+        }
+        page = requests.get(
+            self.url + '/schedule.ajax.php', params, timeout=15)
+        soup = BeautifulSoup(page.text, 'html.parser')
 
-            year (str) - год поступления группы.
+        groups: list[Tag] = soup.find_all('option')
+        group_list = [
+            group.text for group in groups
+            if year and year in group.attrs.get('value', '').split('-')
+        ]
 
-        Возвращает:
-            list: список всех групп данного факультета и года поступления.
-        """
-        # pylint: disable=no-member
-        # Ложно-позитивный результат на find_element_by_xpath()
-        year = str(year)
-        if len(year) != 2:
-            year = year[2:]
-        self.driver.get(self.url)
-
-        # Выбор периода времени в комбо-боксе
-        select_period = Select(self.driver.find_element('xpath',
-                                                        '/html/body/div[4]/div[1]/div[2]/div/div[4]/div[1]/select'))
-        select_period.select_by_value(self.period)
-        time.sleep(1)
-
-        # Выбор факультета в комбо-боксе
-        select_faculty = Select(self.driver.find_element('xpath',
-                                                         '/html/body/div[4]/div[1]/div[2]/div/div[4]/div[2]/select'))
-        select_faculty.select_by_value(faculty)
-        time.sleep(1)
-
-        # Выбор группы в комбо-боксе
-        select_group = Select(self.driver.find_element('xpath',
-                                                       '/html/body/div[4]/div[1]/div[2]/div/div[4]/div[4]/select'))
-        options = select_group.options
-
-        # Заполнение списка всех групп из вариантов комбо-бокса
-        options_by_year = []
-
-        for option in options:
-            options[options.index(option)] = option.text
-
-        for option in options:
-            if option[2:].startswith(f'{year}'):
-                options_by_year.append(option)
-
-        return options_by_year
+        return group_list
 
     def teacher(self, name: str) -> dict:
         """Возвращает преподавателя с расписанием по полному ФИО.
@@ -357,16 +313,16 @@ class Parser:
         Возвращает:
             dict: словарь с полной информацией о преподавателе
         """
-        schedule = self.teacher_schedule_v2(name)
+        schedule = self.teacher_schedule(name)
 
         if not schedule:
             return None
 
-        info = self.teacher_info_v2(name)
+        info = self.teacher_info(name)
         info['schedule'] = schedule
         return info
 
-    def schedule_v2(self, group: str):
+    def schedule(self, group: str):
         """Парсит расписание заданной группы.
 
         Аргументы:
@@ -446,6 +402,7 @@ class Parser:
             elif time_cell.has_attr('rowspan'):
                 # ? Есть rowspan => первая пара в разделе
                 lesson_time = time_cell.text.lstrip()
+                # TODO: сделать более гибкую систему определения номера пары
                 index = lesson_times[lesson_time] - 1
                 week_type = 'odd'
 
