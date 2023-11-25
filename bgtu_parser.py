@@ -175,8 +175,8 @@ class Parser:
                 # ? Пары нет (окно)
                 continue
 
-            subject_name = subject_cell.contents[0].text
-            subject_type = subject_cell.contents[2].text
+            subject_name = subject_cell.contents[0].text.strip('/\\ ')
+            subject_type = subject_cell.contents[2].text.strip('/\\ ')
 
             if subject_type == 'практическое занятие':
                 subject = f"[ПЗ] {subject_name}"
@@ -419,8 +419,8 @@ class Parser:
                 # ? Пары нет (окно)
                 continue
 
-            subject_name = subject_cell.contents[0].text
-            subject_type = subject_cell.contents[2].text
+            subject_name = subject_cell.contents[0].text.strip('/\\ ')
+            subject_type = subject_cell.contents[2].text.strip('/\\ ')
 
             if subject_type == 'практическое занятие':
                 subject = f"[ПЗ] {subject_name}"
