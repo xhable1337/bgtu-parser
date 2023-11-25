@@ -261,15 +261,15 @@ class Parser:
         url = f'{self.base_url}/sveden/employees/'
         page = requests.get(url, timeout=15)
         soup = BeautifulSoup(page.text, 'html.parser')
-        teacher_card = soup.find('div', {'class': 'fio'}, string=name)
+        teacher_link = soup.find('a', string=name)
         nophoto = 'https://www.tu-bryansk.ru/local/templates/bstu/img/nophoto.svg'
 
         # ? Если не найдено имя на странице
-        if not teacher_card:
+        if not teacher_link:
             teacher['img_src'] = 'https://www.tu-bryansk.ru/local/templates/bstu/img/nophoto.svg'
             return teacher
 
-        teacher_card = teacher_card.parent.parent.parent
+        teacher_card = teacher_link.parent.parent.parent.parent
 
         faculty_field = teacher_card.select_one('div.department-parent.field')
         department_field = teacher_card.select_one('div.department.field')
