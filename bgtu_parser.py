@@ -4,15 +4,11 @@
 """
 from copy import deepcopy
 from datetime import datetime
-import time
 
-from selenium import webdriver
-from selenium.webdriver.support.ui import Select
 import requests
-
 from bs4 import BeautifulSoup, Tag
-from rss_parser import Parser as RSSParser
 from cachetools.func import ttl_cache
+from rss_parser import Parser as RSSParser
 
 
 class Parser:
@@ -62,6 +58,51 @@ class Parser:
     def period(self) -> str:
         return self._get_period()
 
+    def get_lesson_number(self, lesson_time: str) -> int:
+        """Определяет номер пары по её времени.
+
+        Аргументы:
+            lesson_time (str): строка вида "08:00 - 09:35"
+
+        Возвращает:
+            int: номер пары
+        """
+        lesson_times = {
+            '08:00 - 09:35': 1,
+            '09:45 - 11:20': 2,
+            '11:30 - 13:05': 3,
+            '13:20 - 14:55': 4,
+            '13:20 - 16:40': 4,
+            '15:05 - 16:40': 5,
+            '16:50 - 18:25': 6,
+            '18:40 - 20:15': 7,
+            '18:40 - 20:25': 7,
+            '20:25 - 22:00': 8
+        }
+        lesson_times_start = {
+            time.split(' - ')[0]: number
+            for time, number in lesson_times.items()
+        }
+        lesson_hours_start = {
+            time.split(':')[0]: number
+            for time, number in lesson_times_start.items()
+        }
+
+        start_time, end_time = lesson_time.split(' - ')
+
+        # Оптимистично пробуем найти в словаре номер пары по времени её начала
+        lesson_number = lesson_times_start.get(start_time, None)
+
+        # Если в расписании опять напортачили (не находится такое время начала)
+        if lesson_number is None:
+            start_hour = int(start_time.split(':')[0])
+            for hour in lesson_hours_start:
+                if int(hour) == int(start_hour):
+                    lesson_number = lesson_hours_start.get(hour)
+                    break
+
+        return lesson_number
+
     def teacher_schedule(self, teacher: str) -> dict:
         """Парсинг расписания преподавателя.
 
@@ -91,6 +132,17 @@ class Parser:
             '18:40 - 20:15': 7,
             '18:40 - 20:25': 7,
             '20:25 - 22:00': 8
+        }
+
+        lesson_time_start = {
+            '08:00': 1,
+            '09:45': 2,
+            '11:30': 3,
+            '13:20': 4,
+            '15:05': 5,
+            '16:50': 6,
+            '18:40': 7,
+            '20:25': 8
         }
 
         teacher_weekday_model_ = {
@@ -159,13 +211,13 @@ class Parser:
             elif time_cell.has_attr('rowspan'):
                 # ? Есть rowspan => первая пара в разделе
                 lesson_time = time_cell.text.lstrip()
-                index = lesson_times[lesson_time] - 1
+                index = self.get_lesson_number(lesson_time)
                 week_type = 'odd'
 
             else:
                 # ? Есть время, нет rowspan => обычная пара
                 lesson_time = time_cell.text.lstrip()
-                index = lesson_times[lesson_time] - 1
+                index = self.get_lesson_number(lesson_time)
                 week_type = 'both'
 
             #! Предмет
