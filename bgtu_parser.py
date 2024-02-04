@@ -455,13 +455,13 @@ class Parser:
                 # ? Есть rowspan => первая пара в разделе
                 lesson_time = time_cell.text.lstrip()
                 # TODO: сделать более гибкую систему определения номера пары
-                index = lesson_times[lesson_time] - 1
+                index = self.get_lesson_number(lesson_time)
                 week_type = 'odd'
 
             else:
                 # ? Есть время, нет rowspan => обычная пара
                 lesson_time = time_cell.text.lstrip()
-                index = lesson_times[lesson_time] - 1
+                index = self.get_lesson_number(lesson_time)
                 week_type = 'both'
 
             #! Предмет
