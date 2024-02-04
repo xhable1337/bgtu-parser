@@ -58,14 +58,15 @@ class Parser:
     def period(self) -> str:
         return self._get_period()
 
-    def get_lesson_number(self, lesson_time: str) -> int:
+    def get_lesson_number(self, lesson_time: str, index: bool = True) -> int:
         """Определяет номер пары по её времени.
 
         Аргументы:
             lesson_time (str): строка вида "08:00 - 09:35"
+            index (bool): возвращать индексы, а не номера пар
 
         Возвращает:
-            int: номер пары
+            int: номер/индекс пары
         """
         lesson_times = {
             '08:00 - 09:35': 1,
@@ -211,13 +212,13 @@ class Parser:
             elif time_cell.has_attr('rowspan'):
                 # ? Есть rowspan => первая пара в разделе
                 lesson_time = time_cell.text.lstrip()
-                index = self.get_lesson_number(lesson_time)
+                index = self.get_lesson_number(lesson_time) - 1
                 week_type = 'odd'
 
             else:
                 # ? Есть время, нет rowspan => обычная пара
                 lesson_time = time_cell.text.lstrip()
-                index = self.get_lesson_number(lesson_time)
+                index = self.get_lesson_number(lesson_time) - 1
                 week_type = 'both'
 
             #! Предмет
@@ -454,14 +455,13 @@ class Parser:
             elif time_cell.has_attr('rowspan'):
                 # ? Есть rowspan => первая пара в разделе
                 lesson_time = time_cell.text.lstrip()
-                # TODO: сделать более гибкую систему определения номера пары
-                index = self.get_lesson_number(lesson_time)
+                index = self.get_lesson_number(lesson_time) - 1
                 week_type = 'odd'
 
             else:
                 # ? Есть время, нет rowspan => обычная пара
                 lesson_time = time_cell.text.lstrip()
-                index = self.get_lesson_number(lesson_time)
+                index = self.get_lesson_number(lesson_time) - 1
                 week_type = 'both'
 
             #! Предмет
