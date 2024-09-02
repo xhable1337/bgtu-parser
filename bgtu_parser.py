@@ -224,14 +224,17 @@ class Parser:
             subject_name = subject_cell.contents[0].text.strip("/\\ ")
             subject_type = subject_cell.contents[2].text.strip("/\\ ")
 
-            if subject_type == "практическое занятие":
+            if "практическое" in subject_type.lower():
                 subject = f"[ПЗ] {subject_name}"
 
-            elif subject_type == "лекция":
+            elif "лекция" in subject_type.lower():
                 subject = f"[Л] {subject_name}"
 
-            elif subject_type == "лабораторное занятие":
+            elif "лабораторное" in subject_type.lower():
                 subject = f"[ЛАБ] {subject_name}"
+
+            else:
+                subject = f"[{subject_type[:5].upper()}] {subject_name}"
 
             #! Группа
             group_cell = row.select_one(".schteacher")
