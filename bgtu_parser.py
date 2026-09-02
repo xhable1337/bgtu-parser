@@ -480,13 +480,13 @@ class Parser:
             subject_name = subject_cell.contents[0].text.strip("/\\ ")
             subject_type = subject_cell.contents[2].text.strip("/\\ ")
 
-            if "практическое" in subject_type.lower():
+            if "практическ" in subject_type.lower():
                 subject = f"[ПЗ] {subject_name}"
 
-            elif "лекция" in subject_type.lower():
+            elif "лекц" in subject_type.lower():
                 subject = f"[Л] {subject_name}"
 
-            elif "лабораторное" in subject_type.lower():
+            elif "лабораторн" in subject_type.lower():
                 subject = f"[ЛАБ] {subject_name}"
 
             else:
