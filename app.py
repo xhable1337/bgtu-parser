@@ -33,7 +33,7 @@ app = FastAPI(title="API БГТУ (Unofficial)",
 def get_schedule(group: str = Query(
         default=None,
         description='Группа, для которой ведётся парсинг расписания',
-        example='О-20-ИВТ-1-по-Б'
+        example='О-26-ИВТ-1-по-Б'
 )):
     """Парсит и возвращает расписание для заданной группы на всё полугодие."""
     return parser.schedule(group)
@@ -76,7 +76,7 @@ def get_teacher_info(
         name: str = Query(
             default=None,
             description='Имя преподавателя',
-            example='Трубаков Евгений Олегович'
+            example='Иванов Иван Иванович'
         )
 ):
     """Парсит и возвращает информацию о заданном преподавателе."""
@@ -90,7 +90,7 @@ def get_teacher_info(
 def get_teacher(name: str = Query(
         default=None,
         description='Имя преподавателя',
-        example='Трубаков Евгений Олегович'
+        example='Иванов Иван Иванович'
 )):
     """Парсит и возвращает преподавателя (информация и расписание)."""
     schedule = parser.teacher_schedule(name)
@@ -112,7 +112,7 @@ def get_teacher_schedule(
         teacher: str = Query(
             default=None,
             description='Имя преподавателя',
-            example='Трубаков Евгений Олегович'
+            example='Иванов Иван Иванович'
         )
 ):
     """Парсит и возвращает расписание заданного преподавателя."""
