@@ -9,7 +9,7 @@ from datetime import datetime
 import requests
 from bs4 import BeautifulSoup, Tag
 from cachetools.func import ttl_cache
-from rss_parser import Parser as RSSParser
+from rss_parser import parse
 
 
 class Parser:
@@ -523,6 +523,5 @@ class Parser:
         # REVIEW: надо полностью перенести метод получения новостей сюда
         url = self.base_url + "/info/press.rss/reviews"
         xml = requests.get(url, timeout=15)
-        parser = RSSParser(xml=xml.content)
-        feed = parser.parse()
+        feed = parser.parse(xml.content)
         return feed
